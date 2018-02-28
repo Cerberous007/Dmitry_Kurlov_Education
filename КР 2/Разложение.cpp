@@ -37,6 +37,12 @@ int decomp(int x)
 		if (flag)
 			optDecomp[i] = -1;
 	}
+	if(optdecomp[x]==-1)
+	{
+		delete[] optDecomp;
+		delete[] cube_4;
+		return -1;
+	}
 	for (int i = x; i > 0;)
 	{
 		for (int k = 0; i >= cube_4[k]; k++)
@@ -58,12 +64,16 @@ int decomp(int x)
 
 int main()
 {
-	int a;
-	printf("Number >0\n");
-	scanf_s("%d", &a);
-	a = decomp(a);
-	printf("%d sum ai\n", a);
-
+	int a;	
+	for (int i = 0; i < 20; i++)
+	{
+		printf("razlogenie i = %d\n", i);
+		a = decomp(i);
+		if (a != -1)
+			printf("%d sum ai\n", a);
+		else		
+			printf("net razlogeni\n");		
+	}
 	return 0;
 }
 
