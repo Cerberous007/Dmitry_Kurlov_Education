@@ -1,0 +1,1 @@
+bool parse_opt(int argc, const char *argv[]);
