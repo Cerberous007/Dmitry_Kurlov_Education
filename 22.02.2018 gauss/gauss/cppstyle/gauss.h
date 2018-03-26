@@ -1,6 +1,6 @@
 #include "const.h"
 
-class guss
+class gauss
 {
 	private:
 	float a[MAX][MAX], x[MAX];
@@ -9,4 +9,4 @@ class guss
 	public:
 	void read(int po);
 	void write_ans();
-}
+};

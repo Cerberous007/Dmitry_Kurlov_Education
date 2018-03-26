@@ -1,4 +1,4 @@
-#include<stdio>
+#include<cstdio>
 #include"gauss.h"
 
 void gauss::write_ans()
