@@ -19,7 +19,10 @@ class Atomic {
 			return data;
 		}
 		operator T() const noexcept {
-			return data;
+			M.lock();
+			T value(data);
+			M.unlock();
+			return value;
 		}
 };
 
