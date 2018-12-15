@@ -11,22 +11,17 @@
 using namespace std;
 
 int result = 0;
-mutex m;
 
 void foo() {
 	for (int i = 0; i < 1000000; ++i) {
-		m.lock();
-		result += i;
-		m.unlock();
+		result += i;		
 	}
 }
 
 void bar() {
-	for (int i = 0; i < 1000000; ++i) {
-		m.lock();
+	for (int i = 0; i < 1000000; ++i) {		
 		result -= i;
-		m.unlock();
-	}
+		}
 }
 
 int main() {
