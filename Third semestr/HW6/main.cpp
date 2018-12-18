@@ -1,24 +1,22 @@
 #include <condition_variable>
+#include <mutex>
+#include <thread>
+#include <fstream>
 #include <cstdio>
 #include <queue>
-#include <mutex>
 #include <string>
-#include <fstream>
-#include <thread>
 
 using namespace std;
 
-class DATA {
-	public:
-	int prior;
+struct DATA {
+	size_t prior;
 	string str;
-	DATA() : prior(rand()) {}
-	DATA(const int prior) : prior(prior) {}
+	DATA(const size_t p = rand()) : prior(p), str("") {}
 };
 
 bool operator<(const DATA&, const DATA&);
 
-ifstream f;
+ifstream infile;
 priority_queue <DATA> data;
 mutex M, mterm;
 condition_variable Cond;
@@ -32,7 +30,7 @@ void prep() {
 	DATA temp;
 	while (more_data()) {
 		temp = prepare();
-		M.lock();
+		unique_lock<mutex> mtmp(M);
 		data.push(temp);
 		Cond.notify_all();
 	}
@@ -44,27 +42,29 @@ void prep() {
 void proc() {
 	DATA temp;
 	while (true) {
-		//TODO unique_lock<mutex>(M);
-		Cond.wait(M, [](){return !data.empty();});
+		unique_lock<mutex> mtmp(M);
+		Cond.wait(mtmp, [](){return !data.empty();});
 		temp = data.top();
 		data.pop();
 		M.unlock();
 		process(temp);
-		mterm.lock();
-		if (term)
+		if (term && data.empty())
 			break;
-		mterm.unlock();
 	}
 }
 
-int main() { 
-	f.open("in.txt");
-	thread T1(&prep);
-	size_t trs(5);
+int main() {
+	srand(23917);
+	infile.open("in.txt");
+	size_t trs;
 	scanf("%llu", &trs);
-	thread *TA[trs];
-	for (size_t k(0); k < trs; ++k)
-		TA[k] = new thread(&proc);
+	thread t1(&prep), *ta[trs];
+	for (size_t i(0); i < trs; ++i)
+		ta[i] = new thread(&proc);
+	t1.join();
+	infile.close();
+	for (size_t i(0); i < trs; ++i)
+		ta[i]->join();
 	return 0;
 }
 
@@ -73,15 +73,15 @@ bool operator<(const DATA &a, const DATA &b) {
 }
 
 bool more_data() {
-	return !f.eof();
-} 
-
-DATA prepare() {
-	DATA d(rand() % 100 - 23); //IT'S IMPORTANT!
-	f >> d.str;
-	return d;
+	return !infile.eof();
 }
 
-void process(DATA &d) {
-	printf("%s\n", d.str.c_str());
+DATA prepare() {
+	DATA tmp;
+	infile >> tmp.str;
+	return tmp;
+}
+
+void process(DATA &tmp) {
+	puts(tmp.str.c_str());
 }
