@@ -14,8 +14,8 @@ using namespace std;
 typedef std::thread *pthread;
 
 inline void Time(const char *msg);
-inline void parallel_add(double*, size_t, size_t cnt =1);
-inline void serial_add(double*, size_t, size_t cnt = 1);
+inline void parallel_add(double*, size_t);
+inline void serial_add(double*, size_t);
 void sum(double*, size_t, double*);
 
 double Rand() {
@@ -52,12 +52,12 @@ void serial_add(double *a, size_t n, size_t cnt) {
 }
 
 void parallel_add(double *a, size_t n, size_t cnt) {
-	size_t step((n + 19) / 20); //16 threads max
+	size_t step((n + 19) / 20); //optimal on my laptop 
 	size_t size = n / step + (n % step ? 1 : 0);
 	pthread *Thrs = new pthread[size];
 	double *res = new double[size];
 	double ans(0);
-	Time("Parallel test begin:");	
+	Time("Parallel add begin:");	
 	for (size_t i = 0, k = 0; k < n; ++i, k += step) {
 		res[i] = 0;
 		Thrs[i] = new std::thread(&sum, a + k, min(step, n - k), res + i);
@@ -68,7 +68,7 @@ void parallel_add(double *a, size_t n, size_t cnt) {
 		ans += res[i];
 	}	
 	printf("Sum = %lf\n", ans);
-	Time("Parallel test end:");
+	Time("Parallel add end:");
 	delete res;
 	delete Thrs;
 }
