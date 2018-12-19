@@ -2,35 +2,68 @@
 //
 
 #include "stdafx.h"
-#include<mutex>
+#include <cassert>
+#include<thread>
 #include<iostream>
-
+#include<mutex>
 using namespace std;
 
 template<typename T>
 class Atomic {
-	std::mutex M;	
-		T data;
-	public:
-		T operator=(const T value) {
-			M.lock();
-			data = value;
-			M.unlock();
-			return data;
-		}
-		operator T() const noexcept {
-			M.lock();
-			T value(data);
-			M.unlock();
-			return value;
-		}
+	std::mutex M;
+	T data;
+public:
+	Atomic(const T &other = T()) : data(other) {}
+	Atomic(const Atomic &other) : Atomic(other.data) {}
+	T operator=(const T &other) {
+		M.lock();
+		data = other;
+		M.unlock();
+		return data;
+	}
+	T operator+=(const T &other) {
+		M.lock();		
+		data += other;
+		M.unlock();
+		return data;
+	}
+	T operator-=(const T &other) {
+		M.lock();
+		data -= other;
+		M.unlock();
+		return data;
+	}
+	operator T() {
+		M.lock();
+		T res(data);
+		M.unlock();
+		return res;
+	}
 };
+
+Atomic<int> result = 0;
+
+void foo() {
+	for (int i = 0; i < 100000; ++i) {
+		result += i;
+	}
+}
+
+void bar() {
+	for (int i = 0; i < 100000; ++i) {
+		result -= i;
+	}
+}
 
 int main()
 {
-	Atomic<int> a;
-	a = 2;
-	int d = a + 123442;
-	printf("%d", d);
+	std::thread th1(foo);
+	std::thread th2(bar);
+	th1.join();
+	th2.join();
+	cout << result << endl;
+	assert(result == 0);
+	cout << "Done.\n";	
     return 0;
 }
+
